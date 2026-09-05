@@ -56,7 +56,13 @@ resource "coder_agent" "main" {
   # SSH sessions and terminals start here by default.
   dir = "/home/coder/workspace"
 
-  startup_script = file("${path.module}/scripts/bootstrap-dotfiles.sh")
+  startup_script = templatefile(
+    "${path.module}/scripts/startup.sh.tftpl",
+    {
+      dotfiles_script = file("${path.module}/scripts/bootstrap-dotfiles.sh")
+      ai_tools_script = file("${path.module}/scripts/bootstrap-ai-tools.sh")
+    }
+  )
 
   metadata {
     display_name = "CPU Usage"
