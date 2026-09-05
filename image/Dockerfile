@@ -58,7 +58,7 @@ RUN apt-get update \
         zip \
         zoxide \
         zsh \
-        exa \
+        eza \
         bat \
     && rm -rf /var/lib/apt/lists/*
 

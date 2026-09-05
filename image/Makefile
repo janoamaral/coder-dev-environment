@@ -1,13 +1,13 @@
-IMAGE := janoamaral/coder-dev
-VERSION ?= 0.1.0
+IMAGE := logicoar/coder-dev
+VERSION ?= 0.1.1
 
 build:
-	docker build \
+	sudo docker build \
 		--platform linux/amd64 \
 		-t $(IMAGE):$(VERSION) \
 		-t $(IMAGE):latest \
 		.
 
 push: build
-	docker push $(IMAGE):$(VERSION)
-	docker push $(IMAGE):latest
+	sudo docker push $(IMAGE):$(VERSION)
+	sudo docker push $(IMAGE):latest

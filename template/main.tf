@@ -16,7 +16,7 @@ terraform {
 # -----------------------------------------------------------------------------
 
 locals {
-  image = "logicoar/coder-dev:0.1.0"
+  image = "logicoar/coder-dev:0.1.2"
 }
 
 variable "docker_socket" {
