@@ -12,6 +12,8 @@ DOTFILES_PACKAGES=(
   zsh
 )
 
+ZSH_PLUGIN_DIR="$HOME/.config/zsh/plugins"
+
 log() {
   printf '[dotfiles] %s\n' "$*"
 }
@@ -50,3 +52,24 @@ then
 fi
 
 log "Dotfiles ready"
+
+# -----------------------------------------------------------------------------
+# Zsh plugins
+# -----------------------------------------------------------------------------
+
+update_repo \
+  "zsh-autosuggestions" \
+  "https://github.com/zsh-users/zsh-autosuggestions.git" \
+  "$ZSH_PLUGIN_DIR/zsh-autosuggestions"
+
+update_repo \
+  "fzf-tab" \
+  "https://github.com/Aloxaf/fzf-tab.git" \
+  "$ZSH_PLUGIN_DIR/fzf-tab"
+
+update_repo \
+  "zsh-syntax-highlighting" \
+  "https://github.com/zsh-users/zsh-syntax-highlighting.git" \
+  "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting"
+
+log "Bootstrap complete"
