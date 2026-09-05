@@ -58,6 +58,8 @@ RUN apt-get update \
         zip \
         zoxide \
         zsh \
+        exa \
+        bat \
     && rm -rf /var/lib/apt/lists/*
 
 # Ubuntu ships fd as "fdfind". Most tooling expects "fd".
