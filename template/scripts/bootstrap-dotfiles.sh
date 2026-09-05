@@ -12,14 +12,36 @@ DOTFILES_PACKAGES=(
   zsh
 )
 
-ZSH_PLUGIN_DIR="$HOME/.config/zsh/plugins"
-
 log() {
   printf '[dotfiles] %s\n' "$*"
 }
 
 warn() {
   printf '[dotfiles] warning: %s\n' "$*" >&2
+}
+
+update_repo() {
+  local name="$1"
+  local repo="$2"
+  local dir="$3"
+
+  if [ ! -d "$dir/.git" ]; then
+    log "Cloning $name"
+
+    if ! git clone --depth 1 "$repo" "$dir"; then
+      warn "Could not clone $name"
+      return 1
+    fi
+  else
+    log "Updating $name"
+
+    if ! git -C "$dir" pull --ff-only; then
+      warn "Could not fast-forward $name; keeping local state"
+      return 1
+    fi
+  fi
+
+  return 0
 }
 
 mkdir -p "$HOME/.config" "$HOME/.local/bin" "$HOME/workspace"
@@ -57,19 +79,26 @@ log "Dotfiles ready"
 # Zsh plugins
 # -----------------------------------------------------------------------------
 
-update_repo \
-  "zsh-autosuggestions" \
-  "https://github.com/zsh-users/zsh-autosuggestions.git" \
-  "$ZSH_PLUGIN_DIR/zsh-autosuggestions"
+ZSH_PLUGIN_DIR="$HOME/.config/zsh/plugins"
 
-update_repo \
-  "fzf-tab" \
-  "https://github.com/Aloxaf/fzf-tab.git" \
-  "$ZSH_PLUGIN_DIR/fzf-tab"
+mkdir -p "$ZSH_PLUGIN_DIR"
 
-update_repo \
-  "zsh-syntax-highlighting" \
-  "https://github.com/zsh-users/zsh-syntax-highlighting.git" \
-  "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting"
+ZSH_PLUGINS=(
+  "zsh-autosuggestions|https://github.com/zsh-users/zsh-autosuggestions.git"
+  "fzf-tab|https://github.com/Aloxaf/fzf-tab.git"
+  "zsh-syntax-highlighting|https://github.com/zsh-users/zsh-syntax-highlighting.git"
+)
 
-log "Bootstrap complete"
+mkdir -p "$ZSH_PLUGIN_DIR"
+
+for plugin in "${ZSH_PLUGINS[@]}"; do
+  name="${plugin%%|*}"
+  repo="${plugin#*|}"
+
+  update_repo \
+    "$name" \
+    "$repo" \
+    "$ZSH_PLUGIN_DIR/$name"
+done
+
+log "Zsh plugins ready"
