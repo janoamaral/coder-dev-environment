@@ -10,6 +10,7 @@ DOTFILES_PACKAGES=(
   nvim
   opencode
   zsh
+  misc
 )
 
 log() {
