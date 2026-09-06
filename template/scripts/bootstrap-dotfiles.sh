@@ -11,6 +11,7 @@ DOTFILES_PACKAGES=(
   opencode
   zsh
   misc
+  node
 )
 
 log() {
