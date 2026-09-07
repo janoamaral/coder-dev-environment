@@ -24,6 +24,30 @@ warn() {
 }
 
 # -----------------------------------------------------------------------------
+# Herdr
+# -----------------------------------------------------------------------------
+
+install_herdr() {
+    if command -v herdr >/dev/null 2>&1; then
+        log "Updating Herdr"
+
+        if ! herdr update; then
+            warn "Could not update Herdr; keeping current version"
+            return 1
+        fi
+    else
+        log "Installing Herdr"
+
+        if ! curl -fsSL https://herdr.dev/install.sh | sh; then
+            warn "Could not install Herdr"
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+# -----------------------------------------------------------------------------
 # Codex
 # -----------------------------------------------------------------------------
 
@@ -193,6 +217,14 @@ main() {
         install_tree_sitter || true
     fi
 
+    if ! command -v curl >/dev/null 2>&1; then
+        warn "curl is required; cannot install Codex, CodeGraph or Herdr"
+    else
+        install_codex || true
+        install_codegraph || true
+        install_herdr || true
+    fi
+
     # OpenCode's CodeGraph MCP configuration lives declaratively in dev-dots.
     # Only Codex needs to be configured here.
     configure_codegraph || true
@@ -204,6 +236,7 @@ main() {
     verify_tool "OpenSpec" "openspec" || true
     verify_tool "CodeGraph" "codegraph" || true
     verify_tool "Tree-sitter" "tree-sitter" || true
+    verify_tool "Herdr" "herdr" || true
 
     log "AI tooling bootstrap complete"
 }
