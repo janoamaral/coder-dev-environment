@@ -13,6 +13,7 @@ DOTFILES_PACKAGES=(
     misc
     node
     bin
+    ssh
 )
 
 log() {
