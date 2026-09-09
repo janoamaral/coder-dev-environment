@@ -45,6 +45,28 @@ data "coder_workspace" "me" {}
 
 data "coder_workspace_owner" "me" {}
 
+data "coder_parameter" "github_ssh_key" {
+  name         = "github_ssh_key"
+  display_name = "GitHub SSH Key"
+  description  = "Identifier of the encrypted GitHub SSH key to use, e.g. v3 or legacy."
+
+  type      = "string"
+  form_type = "input"
+  default   = ""
+  mutable   = true
+
+  validation {
+    regex = "^$|^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    error = "Use only letters, numbers, dots, underscores and hyphens."
+  }
+}
+
+resource "coder_env" "github_ssh_key" {
+  agent_id = coder_agent.main.id
+  name     = "GITHUB_SSH_KEY"
+  value    = data.coder_parameter.github_ssh_key.value
+}
+
 # -----------------------------------------------------------------------------
 # Coder agent
 # -----------------------------------------------------------------------------
@@ -60,6 +82,7 @@ resource "coder_agent" "main" {
     "${path.module}/scripts/startup.sh.tftpl",
     {
       dotfiles_script = file("${path.module}/scripts/bootstrap-dotfiles.sh")
+      secrets_script  = file("${path.module}/scripts/bootstrap-secrets.sh")
       ai_tools_script = file("${path.module}/scripts/bootstrap-ai-tools.sh")
     }
   )
