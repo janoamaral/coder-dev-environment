@@ -94,7 +94,9 @@ resource "coder_agent" "main" {
       secrets_script  = file("${path.module}/scripts/bootstrap-secrets.sh")
       ai_tools_script = file("${path.module}/scripts/bootstrap-ai-tools.sh")
       bootstrap_repos_script = file("${path.module}/scripts/bootstrap-repos.sh")
-      repositories_json      = jsonencode(data.coder_parameter.repositories_json.value)
+      repositories_json_b64 = base64encode(
+        data.coder_parameter.repositories_json.value
+      )
     }
   )
 
