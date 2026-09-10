@@ -67,7 +67,11 @@ printf '%s' "$REPOSITORIES_JSON" | jq -c '.repos[]' |
         mkdir -p "$(dirname "$target")"
         log "Cloning $url -> $target"
 
-        if git clone -- "$url" "$target"; then
+        unset GIT_SSH_COMMAND
+        unset GIT_ASKPASS
+
+        if GIT_SSH_COMMAND="ssh -F $HOME/.ssh/config" \
+            git clone -- "$url" "$target"; then
             log "Cloned: $path"
         else
             warn "Failed to clone '$url'; continuing."

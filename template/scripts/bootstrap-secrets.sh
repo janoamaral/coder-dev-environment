@@ -55,6 +55,7 @@ Host github.com
   User git
   IdentityFile ~/.ssh/github
   IdentitiesOnly yes
+  UserKnownHostsFile ~/.ssh/known_hosts ~/.ssh/known_hosts.github
 # END CODER GITHUB SSH
 EOF
 
