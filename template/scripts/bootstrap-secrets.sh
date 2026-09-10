@@ -165,6 +165,12 @@ main() {
     configure_ssh
     install_github_key
 
+    log "Configuring Git to use workspace SSH identity"
+
+    git config --global \
+        core.sshCommand \
+        "ssh -F $HOME/.ssh/config"
+
     log "Secrets bootstrap complete"
 }
 
