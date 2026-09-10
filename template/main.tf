@@ -61,6 +61,15 @@ data "coder_parameter" "github_ssh_key" {
   }
 }
 
+data "coder_parameter" "repositories_json" {
+  name         = "repositories_json"
+  display_name = "Repositories"
+  description  = "JSON manifest of repositories to clone into ~/workspace."
+  type         = "string"
+  mutable      = true
+  default      = "{\"repos\":[]}"
+}
+
 resource "coder_env" "github_ssh_key" {
   agent_id = coder_agent.main.id
   name     = "GITHUB_SSH_KEY"
@@ -84,6 +93,8 @@ resource "coder_agent" "main" {
       dotfiles_script = file("${path.module}/scripts/bootstrap-dotfiles.sh")
       secrets_script  = file("${path.module}/scripts/bootstrap-secrets.sh")
       ai_tools_script = file("${path.module}/scripts/bootstrap-ai-tools.sh")
+      bootstrap_repos_script = file("${path.module}/scripts/bootstrap-repos.sh")
+      repositories_json      = jsonencode(data.coder_parameter.repositories_json.value)
     }
   )
 
