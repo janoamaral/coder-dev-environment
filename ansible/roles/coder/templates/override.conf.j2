@@ -1,0 +1,9 @@
+[Unit]
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+SupplementaryGroups=docker
+Restart=always
+RestartSec=5

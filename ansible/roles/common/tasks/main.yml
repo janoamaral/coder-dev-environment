@@ -1,0 +1,26 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Upgrade installed apt packages
+  ansible.builtin.apt:
+    upgrade: safe
+  when: apt_upgrade_packages | bool
+
+- name: Install basic server tools
+  ansible.builtin.apt:
+    name:
+      - git
+      - curl
+      - vim
+      - dnsutils
+      - iputils-ping
+      - ca-certificates
+      - gnupg
+      - unzip
+      - jq
+      - htop
+      - ufw
+    state: present

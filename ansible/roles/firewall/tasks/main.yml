@@ -1,0 +1,33 @@
+---
+# Add the SSH rule before enabling UFW so Ansible does not lock itself out.
+- name: Allow SSH
+  community.general.ufw:
+    rule: allow
+    port: "{{ firewall_ssh_port }}"
+    proto: tcp
+
+- name: Allow HTTP
+  community.general.ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+
+- name: Allow HTTPS
+  community.general.ufw:
+    rule: allow
+    port: "443"
+    proto: tcp
+
+- name: Deny incoming traffic by default
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+
+- name: Allow outgoing traffic by default
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+
+- name: Enable UFW
+  community.general.ufw:
+    state: enabled

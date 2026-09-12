@@ -1,0 +1,25 @@
+---
+- name: Install Cockpit from Ubuntu packages
+  ansible.builtin.apt:
+    name: cockpit
+    state: present
+
+- name: Create Cockpit socket override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/cockpit.socket.d
+    state: directory
+    mode: "0755"
+
+- name: Bind Cockpit to localhost only
+  ansible.builtin.template:
+    src: listen.conf.j2
+    dest: /etc/systemd/system/cockpit.socket.d/listen.conf
+    mode: "0644"
+  notify: Restart Cockpit socket
+
+- name: Enable Cockpit socket
+  ansible.builtin.systemd:
+    name: cockpit.socket
+    enabled: true
+    state: started
+    daemon_reload: true

@@ -1,0 +1,4 @@
+---
+# Copy to group_vars/vault.yml, replace the value, then encrypt that file with
+# ansible-vault before committing it.
+vault_postgres_password: "replace-with-a-long-random-password"

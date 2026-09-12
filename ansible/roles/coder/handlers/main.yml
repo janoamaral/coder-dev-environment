@@ -1,0 +1,7 @@
+---
+- name: Restart Coder
+  ansible.builtin.systemd:
+    name: coder
+    state: restarted
+    enabled: true
+    daemon_reload: true

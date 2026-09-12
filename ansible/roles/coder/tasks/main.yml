@@ -1,0 +1,67 @@
+---
+- name: Check whether Coder is installed
+  ansible.builtin.command: which coder
+  register: coder_installed
+  changed_when: false
+  failed_when: false
+
+- name: Download official Coder installer
+  ansible.builtin.get_url:
+    url: https://coder.com/install.sh
+    dest: /tmp/coder-install.sh
+    mode: "0755"
+  when: coder_update_on_provision | bool or coder_installed.rc != 0
+
+- name: Install or update Coder package
+  ansible.builtin.command:
+    argv:
+      - /bin/sh
+      - /tmp/coder-install.sh
+      - "--{{ coder_channel }}"
+  when: coder_update_on_provision | bool or coder_installed.rc != 0
+  register: coder_install
+  changed_when: true
+  notify: Restart Coder
+
+- name: Ensure Coder can access Docker
+  ansible.builtin.user:
+    name: coder
+    groups: docker
+    append: true
+  notify: Restart Coder
+
+- name: Create Coder configuration directory
+  ansible.builtin.file:
+    path: /etc/coder.d
+    state: directory
+    owner: root
+    group: coder
+    mode: "0750"
+
+- name: Write Coder environment configuration
+  ansible.builtin.template:
+    src: coder.env.j2
+    dest: /etc/coder.d/coder.env
+    owner: root
+    group: coder
+    mode: "0640"
+  notify: Restart Coder
+
+- name: Create Coder systemd override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/coder.service.d
+    state: directory
+    mode: "0755"
+
+- name: Make Coder depend on Docker
+  ansible.builtin.template:
+    src: override.conf.j2
+    dest: /etc/systemd/system/coder.service.d/override.conf
+    mode: "0644"
+  notify: Restart Coder
+
+- name: Enable Coder service
+  ansible.builtin.systemd:
+    name: coder
+    enabled: true
+    daemon_reload: true

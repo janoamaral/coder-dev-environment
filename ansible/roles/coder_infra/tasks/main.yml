@@ -1,0 +1,57 @@
+---
+- name: Create Coder infrastructure directory
+  ansible.builtin.file:
+    path: "{{ coder_infra_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Write PostgreSQL environment file
+  ansible.builtin.template:
+    src: postgres.env.j2
+    dest: "{{ coder_infra_dir }}/postgres.env"
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Restart infrastructure containers
+
+- name: Write Caddy configuration
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "{{ coder_infra_dir }}/Caddyfile"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart infrastructure containers
+
+- name: Write Docker Compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ coder_infra_dir }}/compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart infrastructure containers
+
+- name: Start PostgreSQL and Caddy
+  community.docker.docker_compose_v2:
+    project_src: "{{ coder_infra_dir }}"
+    files:
+      - compose.yml
+    state: present
+    pull: missing
+
+- name: Wait for PostgreSQL to become healthy
+  ansible.builtin.command:
+    argv:
+      - docker
+      - inspect
+      - --format
+      - "{{ '{{' }}.State.Health.Status{{ '}}' }}"
+      - coder-postgres
+  register: postgres_health
+  changed_when: false
+  retries: 30
+  delay: 2
+  until: postgres_health.stdout == "healthy"

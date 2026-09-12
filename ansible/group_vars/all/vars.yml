@@ -1,0 +1,35 @@
+---
+# Public DNS name pointing to the VPS.
+coder_domain: "coder.example.com"
+
+# Email used by Caddy/Let's Encrypt for certificate notifications.
+caddy_acme_email: "admin@example.com"
+
+# Coder release channel supported by the official installer.
+coder_channel: "stable"
+coder_update_on_provision: true
+
+# Coder listens only on localhost. Caddy is the public entry point.
+coder_http_address: "127.0.0.1:3000"
+
+# Container images. Major tags keep patch upgrades available deliberately.
+postgres_image: "postgres:17"
+caddy_image: "caddy:2"
+
+postgres_user: "coder"
+postgres_database: "coder"
+postgres_port: 5432
+postgres_password: "{{ vault_postgres_password }}"
+
+# Docker Compose files for PostgreSQL and Caddy.
+coder_infra_dir: "/opt/coder-infra"
+
+# Cockpit is local-only and accessed through an SSH tunnel.
+cockpit_bind_address: "127.0.0.1"
+cockpit_port: 9090
+
+# UFW keeps only SSH and Caddy public.
+firewall_ssh_port: "{{ ansible_port | default(22) }}"
+
+# Normal Ubuntu packages are upgraded when provisioning runs.
+apt_upgrade_packages: true

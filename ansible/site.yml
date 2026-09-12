@@ -1,0 +1,21 @@
+---
+- name: Provision Coder VPS
+  hosts: coder_servers
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Verify the server is Ubuntu
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+        fail_msg: "This playbook only supports Ubuntu LTS."
+        success_msg: "Ubuntu detected."
+
+  roles:
+    - common
+    - firewall
+    - docker
+    - cockpit
+    - coder
+    - coder_infra
