@@ -15,11 +15,51 @@
     src: listen.conf.j2
     dest: /etc/systemd/system/cockpit.socket.d/listen.conf
     mode: "0644"
-  notify: Restart Cockpit socket
+  register: cockpit_socket_config
 
-- name: Enable Cockpit socket
+- name: Reload systemd after Cockpit socket configuration
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: cockpit_socket_config.changed
+
+- name: Restart Cockpit socket after configuration change
+  ansible.builtin.systemd:
+    name: cockpit.socket
+    state: restarted
+    enabled: true
+  when: cockpit_socket_config.changed
+
+- name: Ensure Cockpit socket is enabled and started
   ansible.builtin.systemd:
     name: cockpit.socket
     enabled: true
     state: started
-    daemon_reload: true
+
+- name: Create Cockpit admin user
+  ansible.builtin.user:
+    name: "{{ cockpit_admin_user }}"
+    password: "{{ cockpit_admin_password_hash }}"
+    groups:
+      - sudo
+    append: true
+    shell: /bin/bash
+    create_home: true
+    state: present
+
+- name: Deny Cockpit admin SSH access
+  ansible.builtin.template:
+    src: sshd-cockpit.conf.j2
+    dest: /etc/ssh/sshd_config.d/99-cockpit.conf
+    mode: "0644"
+  register: cockpit_ssh_config
+
+- name: Validate SSH configuration
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+  when: cockpit_ssh_config.changed
+
+- name: Reload SSH after Cockpit access configuration
+  ansible.builtin.systemd:
+    name: ssh
+    state: reloaded
+  when: cockpit_ssh_config.changed

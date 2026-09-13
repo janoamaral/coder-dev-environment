@@ -27,6 +27,8 @@ coder_infra_dir: "/opt/coder-infra"
 # Cockpit is local-only and accessed through an SSH tunnel.
 cockpit_bind_address: "127.0.0.1"
 cockpit_port: 9090
+cockpit_admin_user: "cockpit-admin"
+cockpit_admin_password_hash: "{{ vault_cockpit_admin_password_hash }}"
 
 # UFW keeps only SSH and Caddy public.
 firewall_ssh_port: "{{ ansible_port | default(22) }}"

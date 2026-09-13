@@ -125,6 +125,8 @@ It is changed from the default public listener to:
 
 There is no firewall rule for port 9090.
 
+Cockpit uses a dedicated local account named `cockpit-admin` by default. It does not reuse the normal SSH administration user. The account has `sudo` access for Cockpit administration, but OpenSSH explicitly denies it from logging in over SSH.
+
 Access it from your local machine with an SSH tunnel:
 
 ```bash
@@ -138,6 +140,8 @@ https://localhost:9090
 ```
 
 The browser can show a certificate warning for Cockpit's local certificate. The connection between your computer and the VPS is already protected by SSH.
+
+Sign in to Cockpit with the dedicated `cockpit-admin` username and the password whose hash you stored in Ansible Vault. Continue using the normal administration user for the SSH tunnel.
 
 ## Firewall
 
@@ -259,11 +263,20 @@ Create the real Vault file from the example:
 cp examples/vault.yml.example group_vars/all/vault.yml
 ```
 
-Edit it and replace the password:
+Generate a SHA-512 hash for the Cockpit administrator password:
+
+```bash
+openssl passwd -6
+```
+
+Enter the password when prompted, then put the resulting hash and the PostgreSQL password in the Vault file:
 
 ```yaml
 vault_postgres_password: "use-a-long-random-password-here"
+vault_cockpit_admin_password_hash: "$6$..."
 ```
+
+Store only the hash, not the plaintext Cockpit password. The hash still belongs in Vault and must not be committed in an unencrypted file.
 
 Encrypt the file:
 
@@ -280,8 +293,11 @@ Do not commit the password used to unlock Ansible Vault.
 From this directory:
 
 ```bash
+ansible-playbook site.yml --syntax-check --ask-vault-pass
 ansible-playbook site.yml --ask-vault-pass
 ```
+
+Run the playbook a second time with the same command. The second run should report no unnecessary changes.
 
 On the first run, Ansible will roughly do this:
 
@@ -363,6 +379,43 @@ accepting connections
 ```bash
 sudo docker logs coder-caddy
 ```
+
+### Cockpit
+
+Confirm that the socket is active and enabled:
+
+```bash
+sudo systemctl is-active cockpit.socket
+sudo systemctl is-enabled cockpit.socket
+```
+
+Both commands should succeed and print `active` and `enabled` respectively.
+
+Confirm that Cockpit listens only on localhost and responds over HTTPS:
+
+```bash
+sudo ss -lntp | grep 9090
+curl -kI https://127.0.0.1:9090
+```
+
+The listener must show `127.0.0.1:9090`, not `0.0.0.0:9090`.
+
+Confirm that the dedicated account has `sudo` access and that the SSH configuration is valid:
+
+```bash
+id cockpit-admin
+sudo sshd -t
+```
+
+The `id` output should include the `sudo` group. Test the account in the Cockpit login page through the SSH tunnel.
+
+Finally, confirm that SSH rejects the Cockpit account even when its password is correct:
+
+```bash
+ssh cockpit-admin@YOUR_SERVER_IP
+```
+
+Keep your current SSH session open while testing. Open a second connection with the normal administration user and confirm it still succeeds before closing the first session.
 
 ### Verify Coder can access Docker
 
